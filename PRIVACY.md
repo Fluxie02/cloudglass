@@ -55,7 +55,7 @@ Nothing is stored anywhere else, and nothing is uploaded.
 ### Erasing your data
 
 - **In the app:** Appearance & behavior → Privacy → **Erase…** deletes SoundCloud's cookies, cache and site storage and signs you out.
-- **Completely:** uninstall Cloudglass, then delete the `%APPDATA%\Cloudglass` folder.
+- **Completely:** uninstall Cloudglass and answer **Yes** when the uninstaller asks whether to remove your Cloudglass data. If you said No earlier, delete the `%APPDATA%\Cloudglass` folder yourself.
 
 ## Permissions
 

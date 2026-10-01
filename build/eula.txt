@@ -1,0 +1,84 @@
+CLOUDGLASS - END USER LICENSE AGREEMENT
+
+Please read this agreement before installing Cloudglass. By selecting
+"I accept the terms of the License Agreement" and installing the software,
+you agree to these terms.
+
+
+1. NOT AFFILIATED WITH SOUNDCLOUD
+
+Cloudglass is an unofficial, independent, open-source project. It is NOT
+affiliated with, associated with, authorized by, endorsed by, sponsored by,
+or in any way officially connected with SoundCloud or any of its
+subsidiaries or affiliates. "SoundCloud" and related names and marks are
+trademarks of their respective owner. They are used only to identify the
+service Cloudglass connects to.
+
+
+2. YOUR USE OF SOUNDCLOUD
+
+Cloudglass displays the official soundcloud.com website. All content,
+accounts and services are provided by SoundCloud. SoundCloud's Terms of Use
+(https://soundcloud.com/terms-of-use) and Privacy Policy
+(https://soundcloud.com/pages/privacy) apply to your use of SoundCloud
+through Cloudglass. You are responsible for complying with them.
+
+Cloudglass does not download, rip or redistribute audio, and does not bypass
+subscriptions, paywalls, geo-restrictions or DRM. You agree not to modify it
+to do so.
+
+
+3. PRIVACY
+
+Cloudglass collects no data. It has no telemetry, analytics, crash
+reporting or update checks, and the project runs no server.
+
+Cloudglass stores only your app settings and SoundCloud's own cookies, cache
+and site storage, locally on your PC in %APPDATA%\Cloudglass. Cookies are
+encrypted at rest. You can erase this data at any time from the app, or when
+uninstalling.
+
+By default Cloudglass blocks third-party trackers on SoundCloud's website
+and sends the Global Privacy Control signal. This can also hide some
+third-party display ads. Tracker blocking can be switched off in the app.
+
+The full privacy notice is in PRIVACY.md in the source repository.
+
+
+4. LICENSE (MIT)
+
+Copyright (c) 2026 Cloudglass contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to
+deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+This license covers only the Cloudglass software. It grants no rights to
+SoundCloud's trademarks, website, content or services.
+
+
+5. NO WARRANTY
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+IN THE SOFTWARE.
+
+Cloudglass depends on SoundCloud's website, which can change at any time.
+Features may stop working without notice.
+
+
+6. THIRD-PARTY SOFTWARE
+
+Cloudglass is built with Electron and Chromium, which are distributed under
+their own open-source licenses. Copies are included in the installation
+folder (LICENSE.electron.txt and LICENSES.chromium.html).

@@ -53,7 +53,14 @@ Details: **[PRIVACY.md](PRIVACY.md)** · **[SECURITY.md](SECURITY.md)**
 2. [Verify the download](#verify-your-download). This is recommended.
 3. Run it. The builds are not code-signed (certificates cost money), so Windows SmartScreen will warn you the first time. Choose **More info → Run anyway** only after verifying the checksum.
 
-The installer is per-user: no administrator rights are needed, and Start menu and desktop shortcuts are created. To uninstall, use **Settings → Apps → Installed apps → Cloudglass**.
+The setup wizard walks you through **Welcome → License agreement → Setup type → Install → Finish**:
+
+- **Express (recommended):** installs to your user profile (`%LOCALAPPDATA%\Programs\Cloudglass`) with Start menu and desktop shortcuts.
+- **Custom:** choose the install folder and which shortcuts to create.
+
+Cloudglass always installs for your Windows account only, so no administrator rights are needed. Installing a new version over an old one keeps your settings and sign-in.
+
+To uninstall, use **Settings → Apps → Installed apps → Cloudglass**. The uninstaller asks whether to also remove your Cloudglass data (settings and SoundCloud sign-in). The default is to keep it.
 
 ### Verify your download
 

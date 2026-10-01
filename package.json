@@ -1,0 +1,66 @@
+{
+  "name": "cloudglass",
+  "productName": "Cloudglass",
+  "version": "1.1.0",
+  "description": "Unofficial, privacy-focused liquid-glass desktop client for SoundCloud on Windows. Not affiliated with or endorsed by SoundCloud.",
+  "main": "main.js",
+  "author": "Cloudglass contributors",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "icons": "electron scripts/make-icons.js",
+    "dist": "electron-builder --win nsis portable",
+    "pack": "electron-builder --win dir"
+  },
+  "build": {
+    "appId": "app.cloudglass.desktop",
+    "productName": "Cloudglass",
+    "copyright": "Cloudglass contributors. Unofficial; not affiliated with or endorsed by SoundCloud.",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "npmRebuild": false,
+    "files": [
+      "main.js",
+      "preload.js",
+      "webview-preload.js",
+      "trackers.js",
+      "src/**/*",
+      "build/icons/**/*",
+      "package.json"
+    ],
+    "electronFuses": {
+      "runAsNode": false,
+      "enableCookieEncryption": true,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "enableEmbeddedAsarIntegrityValidation": true,
+      "onlyLoadAppFromAsar": true,
+      "grantFileProtocolExtraPrivileges": false
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Cloudglass",
+      "artifactName": "Cloudglass-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "Cloudglass-Portable-${version}.${ext}"
+    }
+  },
+  "devDependencies": {
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3"
+  }
+}

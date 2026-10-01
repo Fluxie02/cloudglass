@@ -1,0 +1,717 @@
+/* Cloudglass shell — liquid glass chrome around SoundCloud */
+
+:root {
+  --font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+
+  --text: rgba(255, 255, 255, 0.95);
+  --text-2: rgba(235, 235, 245, 0.66);
+  --text-3: rgba(235, 235, 245, 0.4);
+  --accent: #ff5500;
+  --accent-soft: #ff8a3d;
+
+  --glass-fill: rgba(46, 46, 56, 0.26);
+  --glass-strong: rgba(28, 28, 36, 0.72);
+  --rim-hi: rgba(255, 255, 255, 0.38);
+  --rim-lo: rgba(255, 255, 255, 0.07);
+  --hairline: rgba(255, 255, 255, 0.1);
+  --hover: rgba(255, 255, 255, 0.08);
+  --press: rgba(255, 255, 255, 0.15);
+  --shadow: 0 26px 52px -20px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.18);
+  --spring: cubic-bezier(0.22, 1.25, 0.36, 1);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --gap: 10px;
+  --sidebar-w: 256px;
+  --r-panel: 26px;
+  --r-stage: 22px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font: 13.5px/1.35 var(--font);
+  color: var(--text);
+  background: transparent;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+body.material-none { background: #0d0d12; }
+
+button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: default;
+  outline: none;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid rgba(255, 138, 61, 0.9);
+  outline-offset: 2px;
+}
+
+.drag { -webkit-app-region: drag; }
+.drag button, .drag a, .drag input { -webkit-app-region: no-drag; }
+
+.ic {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+.ic .fill, .ic use { fill: inherit; }
+svg .fill { fill: currentColor; stroke: none; }
+
+/* ----------------------------------------------------------- ambient light */
+
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.ambient__blobs i {
+  position: absolute;
+  width: 70vmax;
+  height: 70vmax;
+  border-radius: 50%;
+  opacity: 0.55;
+  will-change: transform;
+}
+.ambient__blobs i:nth-child(1) {
+  left: -25vmax; top: -30vmax;
+  background: radial-gradient(closest-side, rgba(255, 92, 20, 0.55), transparent);
+  animation: drift-a 46s ease-in-out infinite alternate;
+}
+.ambient__blobs i:nth-child(2) {
+  right: -30vmax; top: -10vmax;
+  background: radial-gradient(closest-side, rgba(208, 52, 140, 0.42), transparent);
+  animation: drift-b 54s ease-in-out infinite alternate;
+}
+.ambient__blobs i:nth-child(3) {
+  left: 10vmax; bottom: -40vmax;
+  background: radial-gradient(closest-side, rgba(84, 70, 255, 0.38), transparent);
+  animation: drift-c 60s ease-in-out infinite alternate;
+}
+@keyframes drift-a { to { transform: translate(18vmax, 14vmax) scale(1.15); } }
+@keyframes drift-b { to { transform: translate(-16vmax, 20vmax) scale(0.9); } }
+@keyframes drift-c { to { transform: translate(14vmax, -18vmax) scale(1.1); } }
+
+.ambient__art {
+  position: absolute;
+  inset: -20%;
+  background-size: cover;
+  background-position: center;
+  filter: blur(80px) saturate(1.8) brightness(0.85);
+  opacity: 0;
+  transform: scale(1.05);
+  transition: opacity 1.4s var(--ease);
+}
+.ambient__art.is-on { opacity: 0.7; }
+body.has-art .ambient__blobs i { opacity: 0.18; transition: opacity 1.4s var(--ease); }
+
+.ambient__tint {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 8, 12, 0.34);
+}
+body.material-mica .ambient__tint { background: rgba(8, 8, 12, 0.22); }
+body.material-none .ambient__tint { background: rgba(8, 8, 12, 0.3); }
+body.no-ambient .ambient__blobs,
+body.no-ambient .ambient__art { display: none; }
+body.is-blurred .ambient__blobs i { animation-play-state: paused; }
+
+/* ------------------------------------------------------------------- glass */
+
+/*
+ * A glass surface is three layers:
+ *   ::before  frosted body: refraction (SVG displacement, see liquid.js) + blur
+ *   ::after   rim light and a specular sheen that follows the pointer
+ *   children  content
+ * Keeping the backdrop-filter on a pseudo-element means nested glass still
+ * sees the real backdrop.
+ */
+.glass {
+  position: relative;
+  isolation: isolate;
+}
+.glass::before,
+.glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.glass::before {
+  z-index: -2;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0) 40%),
+    var(--glass-fill);
+  backdrop-filter: var(--lg, ) blur(var(--blur, 8px)) saturate(190%) brightness(1.06);
+  box-shadow: var(--shadow);
+}
+.glass::after {
+  z-index: -1;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, -40%), rgba(255, 255, 255, 0.11), transparent 65%);
+  box-shadow:
+    inset 0 1px 0.5px var(--rim-hi),
+    inset 0 -1px 0.5px var(--rim-lo),
+    inset 0 0 0 0.5px var(--hairline);
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+}
+
+/* -------------------------------------------------------------------- layout */
+
+.app {
+  position: relative;
+  z-index: 1;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  gap: var(--gap);
+  padding: var(--gap);
+}
+/* Full screen keeps the whole app (sidebar, toolbar, player); only the window
+   buttons give way to a single "exit full screen" button. */
+body.is-fullscreen .winctl [data-win="minimize"],
+body.is-fullscreen .winctl [data-win="maximize"],
+body.is-fullscreen .winctl [data-win="close"],
+body.is-fullscreen .winctl .capsule__divider { display: none; }
+
+/* ----------------------------------------------------------------- sidebar */
+
+.sidebar {
+  --blur: 14px;
+  border-radius: var(--r-panel);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 8px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 46px;
+  padding: 0 10px;
+  flex: none;
+}
+.brand__mark { width: 28px; height: 28px; filter: drop-shadow(0 3px 8px rgba(255, 90, 31, 0.45)); }
+.brand__name {
+  font: 600 16px/1 var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+.nav {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 2px 4px;
+  overflow-y: auto;
+  min-height: 0;
+  flex: 0 1 auto;
+  scrollbar-width: none;
+}
+.nav__label {
+  padding: 16px 12px 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-3);
+}
+.nav__item {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 12px;
+  color: var(--text-2);
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s ease, background-color 0.2s ease, transform 0.4s var(--spring);
+}
+.nav__item .ic { width: 19px; height: 19px; transition: color 0.25s ease; }
+.nav__item:hover { color: var(--text); background-color: var(--hover); }
+.nav__item:active { transform: scale(0.97); }
+.nav__item.is-active { color: var(--text); background-color: transparent; }
+.nav__item.is-active .ic { color: var(--accent-soft); }
+
+/* The selection pill slides between items like a drop of liquid. */
+.nav__indicator {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: 0;
+  height: 36px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.08));
+  box-shadow:
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.32),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.1),
+    0 6px 16px -8px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transform: translateY(var(--y, 0)) scaleY(var(--sy, 1));
+  transition: transform 0.55s var(--spring), opacity 0.25s ease;
+  pointer-events: none;
+}
+.nav__indicator.is-on { opacity: 1; }
+
+.sidebar__spacer { flex: 1 1 auto; min-height: 8px; }
+
+.sidebar__footer {
+  flex: none;
+  padding: 6px 2px 0;
+  border-top: 0.5px solid var(--hairline);
+  margin-top: 8px;
+}
+.settings-btn { width: 100%; font-size: 13px; }
+
+/* -------------------------------------------------------------- now playing */
+
+.np {
+  --blur: 18px;
+  --glass-fill: rgba(255, 255, 255, 0.06);
+  flex: none;
+  border-radius: 20px;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+.np__art {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.75), inset 0 0 0 0.5px rgba(255, 255, 255, 0.12);
+  transition: transform 0.5s var(--spring);
+}
+.np__art:hover { transform: scale(1.015); }
+.np__art:active { transform: scale(0.98); }
+.np__art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.np__art img.is-loaded { opacity: 1; }
+.np__placeholder {
+  position: absolute;
+  inset: 32%;
+  width: 36%;
+  height: 36%;
+  opacity: 0.5;
+}
+.np[data-state="playing"] .np__placeholder,
+.np[data-state="paused"] .np__placeholder { display: none; }
+
+.np__meta { min-width: 0; padding: 0 2px; }
+.np__title,
+.np__artist {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.np__title { font-weight: 600; font-size: 13.5px; }
+.np__artist { color: var(--text-2); font-size: 12.5px; margin-top: 2px; }
+
+.np__progress {
+  height: 3px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+  margin: 0 2px;
+}
+.np__progress i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transform-origin: left;
+  transform: scaleX(var(--p, 0));
+  background: linear-gradient(90deg, #ff9a52, #ff4d00);
+  border-radius: inherit;
+  transition: transform 0.75s linear;
+}
+
+.np__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.np__spacer { width: 34px; }
+.np[data-state="empty"] .np__controls { opacity: 0.45; pointer-events: none; }
+.np__like.is-liked { color: var(--accent); }
+
+/* compact card on shorter windows */
+@media (max-height: 860px) {
+  .np { grid-template-columns: 56px 1fr; align-items: center; gap: 8px 10px; }
+  .np__art { border-radius: 10px; }
+  .np__progress, .np__controls { grid-column: 1 / -1; }
+}
+
+/* ----------------------------------------------------------------- buttons */
+
+.btn-round {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: var(--text);
+  transition: background-color 0.2s ease, transform 0.45s var(--spring), color 0.2s ease, opacity 0.2s ease;
+}
+.btn-round .ic { width: 19px; height: 19px; }
+.btn-round:hover { background-color: var(--hover); }
+.btn-round:active { background-color: var(--press); transform: scale(0.86); }
+.btn-round:disabled { opacity: 0.32; background: none; transform: none; }
+
+.btn-play {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: #121216;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: inset 0 1px 0 #fff, 0 8px 20px -6px rgba(0, 0, 0, 0.6);
+  transition: transform 0.45s var(--spring), background-color 0.2s ease;
+}
+.btn-play .ic { width: 20px; height: 20px; }
+.btn-play:hover { transform: scale(1.07); background: #fff; }
+.btn-play:active { transform: scale(0.9); }
+
+.btn-pill {
+  height: 36px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(180deg, #ff7a2e, #ff4d00);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 20px -8px rgba(255, 77, 0, 0.8);
+  transition: transform 0.45s var(--spring), filter 0.2s ease;
+}
+.btn-pill:hover { filter: brightness(1.08); }
+.btn-pill:active { transform: scale(0.94); }
+
+/* ---------------------------------------------------------------- titlebar */
+
+.main {
+  display: grid;
+  grid-template-rows: 42px minmax(0, 1fr);
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.titlebar__fill { flex: 1; align-self: stretch; }
+
+.capsule {
+  --blur: 10px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 42px;
+  padding: 0 4px;
+  border-radius: 999px;
+}
+
+.capsule__divider {
+  width: 0.5px;
+  height: 20px;
+  margin: 0 3px;
+  background: var(--hairline);
+}
+
+.titlebar__fill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+.toast {
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--text);
+  background: rgba(30, 30, 38, 0.62);
+  backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: inset 0 1px 0.5px var(--rim-hi), inset 0 0 0 0.5px var(--hairline), var(--shadow);
+  animation: pop-in 0.42s var(--spring);
+}
+.toast[hidden] { display: none; }
+.toast kbd {
+  font: 600 11.5px var(--font);
+  padding: 1px 6px;
+  margin: 0 2px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.winctl .btn-close:hover { background-color: rgba(232, 17, 35, 0.85); color: #fff; }
+.winctl .btn-close:active { background-color: rgba(232, 17, 35, 0.65); }
+
+#reloadBtn.is-loading .ic { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ------------------------------------------------------------------- stage */
+
+.stage {
+  position: relative;
+  border-radius: var(--r-stage);
+  overflow: hidden;
+  min-height: 0;
+  background: rgba(10, 10, 14, 0.16);
+  box-shadow: var(--shadow);
+}
+.stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.24),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.09);
+}
+
+webview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+webview.is-ready { opacity: 1; }
+
+.stage__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  background: rgba(10, 10, 14, 0.82);
+}
+.stage__overlay[hidden] { display: none; }
+.offline {
+  --blur: 24px;
+  --glass-fill: rgba(30, 30, 38, 0.55);
+  width: min(380px, 86%);
+  padding: 30px 28px 26px;
+  border-radius: 28px;
+  text-align: center;
+}
+.offline__icon { width: 40px; height: 40px; color: var(--text-2); }
+.offline h2 { margin: 12px 0 6px; font: 600 18px var(--font-display); }
+.offline p { margin: 0 0 18px; color: var(--text-2); }
+
+/* ---------------------------------------------------------------- settings */
+
+/* Shell glass can't blur the SoundCloud view underneath (it's a separate
+   compositor surface), so panels that float over it carry a denser tint. */
+.popover {
+  --blur: 30px;
+  --glass-fill: rgba(28, 28, 36, 0.9);
+  position: fixed;
+  z-index: 50;
+  left: calc(var(--gap) + 12px);
+  bottom: 62px;
+  width: 340px;
+  padding: 16px 16px 12px;
+  border-radius: 24px;
+  transform-origin: 30px 100%;
+  animation: pop-in 0.42s var(--spring);
+}
+.popover[hidden] { display: none; }
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.9) translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.popover h3 {
+  margin: 2px 4px 12px;
+  font: 600 15px var(--font-display);
+}
+.popover .row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 42px;
+  padding: 0 4px;
+  border-top: 0.5px solid var(--hairline);
+}
+.popover__section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 18px 4px 6px;
+  font: 600 12px var(--font);
+  letter-spacing: 0.02em;
+  color: var(--text-2);
+}
+.popover__section .ic { width: 16px; height: 16px; color: #7ee2a8; }
+.row__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.row__text small { font-size: 11.5px; color: var(--text-3); }
+.btn-quiet {
+  flex: none;
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #ff8a80;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 0.5px var(--hairline);
+  transition: background-color 0.2s ease, transform 0.4s var(--spring);
+}
+.btn-quiet:hover { background: rgba(255, 90, 80, 0.16); }
+.btn-quiet:active { transform: scale(0.94); }
+.popover__hint,
+.popover__foot {
+  margin: 10px 4px 0;
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.popover__foot { margin-top: 6px; }
+
+.segmented {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 0.5px var(--hairline);
+}
+.segmented button {
+  position: relative;
+  z-index: 1;
+  height: 28px;
+  padding: 0 11px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  color: var(--text-2);
+  transition: color 0.2s ease;
+}
+.segmented button[aria-checked="true"] { color: var(--text); }
+.segmented__thumb {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  width: calc((100% - 4px) / 3);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.14));
+  box-shadow: inset 0 1px 0.5px rgba(255, 255, 255, 0.4), 0 3px 8px -2px rgba(0, 0, 0, 0.5);
+  transform: translateX(calc(var(--i, 0) * 100%));
+  transition: transform 0.5s var(--spring);
+}
+
+.toggle {
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 26px;
+  margin: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 0 0 0.5px var(--hairline);
+  transition: background-color 0.25s ease;
+}
+.toggle::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  transition: transform 0.45s var(--spring), width 0.3s var(--spring);
+}
+.toggle:active::after { width: 25px; }
+.toggle:checked { background: linear-gradient(180deg, #ff7a2e, #ff5500); }
+.toggle:checked::after { transform: translateX(18px); }
+.toggle:checked:active::after { transform: translateX(13px); }
+
+/* ------------------------------------------- narrow windows: icon rail */
+
+@media (max-width: 1260px) {
+  :root { --sidebar-w: 72px; }
+  .sidebar { padding: 8px 6px; align-items: stretch; }
+  .brand { justify-content: center; padding: 0; }
+  .brand__name,
+  .nav__item span,
+  .np__meta,
+  .np__progress,
+  .np__like,
+  .np [data-cmd="prev"],
+  .np [data-cmd="next"],
+  .np__spacer { display: none; }
+  .nav__item { justify-content: center; padding: 0; }
+  .nav__item .ic { width: 21px; height: 21px; }
+  .nav__label {
+    height: 0.5px;
+    margin: 10px 12px;
+    padding: 0;
+    font-size: 0;
+    background: var(--hairline);
+  }
+  .np {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    padding: 6px;
+    gap: 8px;
+    border-radius: 16px;
+  }
+  .np__art { border-radius: 10px; }
+  .btn-play { width: 36px; height: 36px; }
+  .btn-play .ic { width: 17px; height: 17px; }
+  .settings-btn { justify-content: center; padding: 0; }
+  .popover { left: 72px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01s !important; transition-duration: 0.01s !important; }
+}

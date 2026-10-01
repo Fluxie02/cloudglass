@@ -1,0 +1,582 @@
+/*
+ * Cloudglass — liquid glass skin for soundcloud.com
+ * Injected by the main process into the SoundCloud <webview>.
+ * Everything here only restyles; if SoundCloud renames a class, that part
+ * quietly falls back to SoundCloud's own look.
+ */
+
+:root {
+  --header-height: 64px;
+  --cg-page: rgba(12, 12, 17, 0.46);
+  --cg-glass: rgba(40, 40, 48, 0.30);
+  --cg-glass-strong: rgba(24, 24, 30, 0.74);
+  --cg-glass-menu: rgba(30, 30, 38, 0.66);
+  --cg-rim-hi: rgba(255, 255, 255, 0.34);
+  --cg-rim-lo: rgba(255, 255, 255, 0.07);
+  --cg-hover: rgba(255, 255, 255, 0.09);
+  --cg-track: rgba(255, 255, 255, 0.16);
+  --cg-edge: rgba(10, 10, 14, 0.62);
+  --cg-shadow: 0 22px 44px -14px rgba(0, 0, 0, 0.6), 0 3px 10px rgba(0, 0, 0, 0.22);
+  --cg-spring: cubic-bezier(0.22, 1.25, 0.36, 1);
+}
+
+body.theme-light {
+  --cg-page: rgba(250, 250, 252, 0.62);
+  --cg-glass: rgba(255, 255, 255, 0.42);
+  --cg-glass-strong: rgba(252, 252, 254, 0.84);
+  --cg-glass-menu: rgba(255, 255, 255, 0.74);
+  --cg-rim-hi: rgba(255, 255, 255, 0.9);
+  --cg-rim-lo: rgba(0, 0, 0, 0.05);
+  --cg-hover: rgba(0, 0, 0, 0.06);
+  --cg-track: rgba(0, 0, 0, 0.12);
+  --cg-edge: rgba(248, 248, 250, 0.7);
+  --cg-shadow: 0 22px 44px -16px rgba(0, 0, 0, 0.28), 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* SoundCloud's own design tokens: swap opaque fills for translucent ones so
+   buttons, tags and inputs sit on the glass instead of punching holes in it. */
+body.theme-dark {
+  --highlight-color: rgba(255, 255, 255, 0.1);
+  --background-highlight-color: rgba(255, 255, 255, 0.1);
+  --button-secondary-background-color: rgba(255, 255, 255, 0.1);
+  --button-secondary-disabled-background-color: rgba(255, 255, 255, 0.06);
+  --button-secondary-selected-background-color: rgba(255, 255, 255, 0.1);
+  --button-secondary-selected-active-background-color: rgba(255, 255, 255, 0.16);
+  --button-secondary-loading-background-color: rgba(255, 255, 255, 0.1);
+  --button-secondary-active-background-color: rgba(255, 255, 255, 0.16);
+  --button-primary-selected-background-color: rgba(255, 255, 255, 0.14);
+  --button-primary-selected-active-background-color: rgba(255, 255, 255, 0.2);
+  --button-tertiary-background-color: rgba(255, 255, 255, 0.06);
+  --button-tertiary-disabled-background-color: rgba(255, 255, 255, 0.04);
+  --button-tertiary-selected-background-color: rgba(255, 255, 255, 0.06);
+  --button-tertiary-selected-active-background-color: rgba(255, 255, 255, 0.1);
+  --button-tertiary-loading-background-color: rgba(255, 255, 255, 0.06);
+  --button-tertiary-active-background-color: rgba(255, 255, 255, 0.1);
+  --tag-default-background-color: rgba(255, 255, 255, 0.1);
+  --input-default-background-color: rgba(255, 255, 255, 0.08);
+  --input-placeholder-background-color: rgba(255, 255, 255, 0.08);
+  --input-focused-background-color: rgba(255, 255, 255, 0.12);
+  --input-invalid-background-color: rgba(255, 255, 255, 0.08);
+}
+body.theme-light {
+  --highlight-color: rgba(0, 0, 0, 0.06);
+  --background-highlight-color: rgba(0, 0, 0, 0.06);
+  --button-secondary-background-color: rgba(0, 0, 0, 0.06);
+  --button-secondary-active-background-color: rgba(0, 0, 0, 0.1);
+  --tag-default-background-color: rgba(0, 0, 0, 0.06);
+  --input-default-background-color: rgba(255, 255, 255, 0.55);
+  --input-placeholder-background-color: rgba(255, 255, 255, 0.55);
+  --input-focused-background-color: rgba(255, 255, 255, 0.75);
+}
+
+/* ------------------------------------------------------------ page canvas */
+
+html {
+  background: var(--cg-page) !important;
+}
+body {
+  background: transparent !important;
+  overflow-x: clip !important;
+}
+
+.sc-button,
+.sc-tag,
+.sc-input,
+.commentForm__input {
+  border-radius: 999px !important;
+}
+.sc-button.sc-button-icon {
+  border-radius: 999px !important;
+}
+.sc-button-secondary,
+.sc-button-tertiary,
+.sc-tag {
+  transition: background-color 0.2s ease !important;
+}
+.sc-button-secondary:hover,
+.sc-tag:hover {
+  background-color: rgba(255, 255, 255, 0.16) !important;
+}
+body.theme-light .sc-button-secondary:hover,
+body.theme-light .sc-tag:hover {
+  background-color: rgba(0, 0, 0, 0.1) !important;
+}
+/* Sticky title bands (search, profiles) become frosted glass. */
+.searchTitle,
+.l-fixed-top .fixedTop,
+.userInfoBar,
+.profileHeader__info {
+  background-color: var(--cg-glass-menu) !important;
+  backdrop-filter: blur(24px) saturate(180%);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0.5px var(--cg-rim-hi), inset 0 0 0 0.5px rgba(255, 255, 255, 0.08);
+}
+
+::selection {
+  background: rgba(255, 102, 26, 0.45);
+}
+
+::-webkit-scrollbar { width: 12px; height: 12px; background: transparent; }
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.16);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+  min-height: 48px;
+}
+::-webkit-scrollbar-thumb:hover { background-color: rgba(255, 255, 255, 0.3); }
+body.theme-light ::-webkit-scrollbar-thumb { background-color: rgba(0, 0, 0, 0.18); }
+
+.l-container.l-content {
+  padding-top: calc(var(--header-height) + 10px) !important;
+  padding-bottom: 120px !important;
+}
+
+/* SoundCloud's fixed-width layout steps down earlier so the page keeps a
+   comfortable gutter inside the rounded content area. */
+@media (max-width: 1319px) {
+  .l-container:not(.l-fullwidth),
+  .l-fixed-top { width: 1080px !important; }
+}
+@media (max-width: 1159px) {
+  .l-container:not(.l-fullwidth),
+  .l-fixed-top { width: 960px !important; }
+}
+
+/* ------------------------------------------------------------------ header */
+
+.header {
+  background: transparent !important;
+  height: var(--header-height) !important;
+}
+
+/* Scroll-edge effect: content softly blurs and fades as it slides under the bar. */
+.header::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 -22px 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(to bottom, var(--cg-edge), transparent);
+  backdrop-filter: blur(8px) saturate(150%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent);
+  mask-image: linear-gradient(to bottom, #000 40%, transparent);
+}
+
+.header__inner {
+  width: auto !important;
+  max-width: none !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 12px 16px 0 !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 12px;
+}
+
+/* Logo + Home/Feed/Library live in the Cloudglass sidebar. */
+.header__left {
+  display: none !important;
+}
+
+.header__middle {
+  flex: 1 1 auto !important;
+  display: flex !important;
+  min-width: 0;
+  float: none !important;
+}
+
+.header__search {
+  width: min(480px, 100%) !important;
+  height: 42px !important;
+  float: none !important;
+  padding: 0 !important;
+}
+
+.header__search .headerSearch {
+  position: relative;
+  width: 100% !important;
+  height: 42px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 999px;
+  isolation: isolate;
+}
+
+.header__right {
+  position: relative;
+  flex: none !important;
+  display: flex !important;
+  align-items: center !important;
+  height: 42px !important;
+  padding: 0 8px !important;
+  margin: 0 !important;
+  float: none !important;
+  border-radius: 999px;
+  isolation: isolate;
+}
+
+/* Shared glass body for the header capsules and the player capsule. */
+.header__search .headerSearch::before,
+.header__right::before,
+.playControls__inner::before {
+  content: "" !important;
+  display: block !important; /* .sc-clearfix makes it a shrink-to-fit table */
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0) 55%),
+    var(--cg-glass);
+  box-shadow:
+    inset 0 1px 0.5px var(--cg-rim-hi),
+    inset 0 -1px 0.5px var(--cg-rim-lo),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.10),
+    var(--cg-shadow);
+}
+.header__search .headerSearch::before {
+  backdrop-filter: var(--cg-lg-search, ) blur(6px) saturate(185%) brightness(1.06);
+}
+.header__right::before {
+  backdrop-filter: var(--cg-lg-actions, ) blur(6px) saturate(185%) brightness(1.06);
+}
+
+.header__right > *,
+.header__right ul,
+.header__right li {
+  float: none !important;
+  display: flex !important;
+  align-items: center !important;
+  height: 42px !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  box-sizing: border-box !important;
+}
+.header__right .sc-button {
+  top: 0 !important;
+  align-self: center !important;
+}
+.header__right .header__moreButton {
+  padding: 0 !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+.header__right::after {
+  display: none !important;
+}
+.header__right a,
+.header__right button {
+  border-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+.header__right .uploadButton {
+  display: flex !important;
+  align-items: center;
+  height: 30px !important;
+  padding: 0 12px !important;
+}
+.header__right .uploadButton span {
+  line-height: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.header__right .header__moreButton,
+.header__right .header__notificationsLink,
+.header__right .header__messagesLink {
+  height: 34px !important;
+  min-width: 34px;
+  background-position: center !important;
+}
+.header__right .sc-button {
+  height: 30px !important;
+  border-radius: 999px !important;
+  margin: 0 2px !important;
+}
+.header__right .loginButton {
+  background: var(--cg-hover) !important;
+}
+.header__right a:not(.sc-button) {
+  border-radius: 999px;
+  transition: background-color 0.2s ease;
+}
+.header__right a:not(.sc-button):hover {
+  background-color: var(--cg-hover);
+}
+
+.headerSearch__input {
+  height: 42px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 0 46px 0 18px !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  box-shadow: none !important;
+  font-size: 14px !important;
+  color: var(--primary-color) !important;
+}
+.headerSearch__input::placeholder {
+  color: var(--secondary-color) !important;
+}
+.headerSearch__input:focus {
+  box-shadow: inset 0 0 0 1.5px rgba(255, 102, 26, 0.7) !important;
+}
+.headerSearch__submit {
+  top: 50% !important;
+  right: 12px !important;
+  transform: translateY(-50%);
+  border-radius: 999px;
+}
+
+/* Search suggestions + every SoundCloud dropdown become frosted glass sheets. */
+.dropdownMenu > div,
+.headerSearch__suggestions,
+.searchSuggestions,
+.tooltip__content {
+  background: var(--cg-glass-menu) !important;
+  backdrop-filter: blur(30px) saturate(190%) !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  box-shadow:
+    inset 0 1px 0.5px var(--cg-rim-hi),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.1),
+    var(--cg-shadow) !important;
+  overflow: hidden;
+}
+.dropdownMenu li a:hover,
+.dropdownMenu li button:hover,
+.dropdownMenu .moreActions__button:hover {
+  background-color: var(--cg-hover) !important;
+}
+
+/* ------------------------------------------------------------ player bar */
+
+.playControls {
+  left: 16px !important;
+  right: 16px !important;
+  bottom: 14px !important;
+  width: auto !important;
+}
+.playControls__bg {
+  display: none !important;
+}
+.playControls__inner {
+  position: relative;
+  height: 64px !important;
+  border-radius: 32px;
+  background: transparent !important;
+  isolation: isolate;
+  transform: translateY(calc(100% + 40px)) !important;
+  transition: transform 0.55s var(--cg-spring) !important;
+}
+.playControls.m-visible .playControls__inner {
+  transform: translateY(0) !important;
+}
+.playControls__inner::before {
+  backdrop-filter: var(--cg-lg-player, ) blur(7px) saturate(190%) brightness(1.08);
+}
+.playControls__wrapper {
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 22px 0 18px !important;
+}
+
+/* Transport buttons: soft glass beads with a springy press. */
+.playControls__control,
+.playControls__shuffle .sc-button,
+.playControls__repeat .sc-button,
+.volume__button {
+  background-color: transparent !important;
+  border-radius: 999px !important;
+  transition: transform 0.35s var(--cg-spring), background-color 0.2s ease !important;
+}
+.playControls__control:hover,
+.playControls__shuffle .sc-button:hover,
+.playControls__repeat .sc-button:hover,
+.volume__button:hover {
+  background-color: var(--cg-hover) !important;
+}
+.playControls__control:active,
+.playControls__shuffle .sc-button:active,
+.playControls__repeat .sc-button:active {
+  transform: scale(0.88);
+}
+.playControls__play {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 50% !important;
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: inset 0 1px 0 #fff, 0 6px 16px -4px rgba(0, 0, 0, 0.5);
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+.playControls__play:hover {
+  background-color: #fff !important;
+  transform: scale(1.06);
+}
+.playControls__play svg {
+  color: #121212 !important;
+  fill: #121212 !important;
+}
+.playControls__play > div {
+  position: static !important;
+}
+
+/* Timeline */
+.playbackTimeline__progressBackground {
+  height: 4px !important;
+  border-radius: 999px;
+  background-color: var(--cg-track) !important;
+}
+.playbackTimeline__progressBar {
+  height: 4px !important;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff8a3d, #ff4d00) !important;
+}
+.playbackTimeline__progressHandle {
+  border: 0 !important;
+  background: #fff !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+
+/* Volume pop-up */
+.volume__sliderWrapper {
+  background: var(--cg-glass-menu) !important;
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 0 !important;
+  border-radius: 18px !important;
+  box-shadow: inset 0 1px 0.5px var(--cg-rim-hi), var(--cg-shadow) !important;
+}
+.volume__sliderBackground {
+  border-radius: 999px;
+  background-color: var(--cg-track) !important;
+}
+.volume__sliderProgress {
+  border-radius: 999px;
+}
+
+/* Like / follow / queue buttons in the bar: round, clear glass beads. */
+.playControls .playbackSoundBadge .sc-button,
+.playControls .playbackSoundBadge__actions .sc-button,
+.playControls__soundBadge .sc-button {
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+}
+.playControls .playbackSoundBadge .sc-button:hover,
+.playControls__soundBadge .sc-button:hover {
+  background-color: var(--cg-hover) !important;
+}
+
+/* Now-playing badge */
+.playbackSoundBadge__avatar,
+.playbackSoundBadge__avatar .image,
+.playbackSoundBadge__avatar .image span {
+  border-radius: 9px !important;
+  overflow: hidden;
+}
+.playbackSoundBadge__avatar {
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.5);
+}
+
+/* Up-next queue */
+.playControls__queue {
+  bottom: calc(100% + 12px) !important;
+}
+.queue {
+  background: var(--cg-glass-strong) !important;
+  backdrop-filter: blur(40px) saturate(190%);
+  border: 0 !important;
+  border-radius: 24px !important;
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 0.5px var(--cg-rim-hi),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.08),
+    var(--cg-shadow) !important;
+}
+.queue__panel {
+  background: transparent !important;
+}
+
+.playControlsPanel {
+  background: var(--cg-glass-strong) !important;
+  backdrop-filter: blur(30px) saturate(180%);
+  border-radius: 18px !important;
+}
+
+/* --------------------------------------------------------------- content */
+
+.banner,
+.announcements .banner {
+  background: var(--cg-glass) !important;
+  backdrop-filter: blur(20px) saturate(170%);
+  border-radius: 16px !important;
+  box-shadow: inset 0 1px 0.5px var(--cg-rim-hi), inset 0 0 0 0.5px rgba(255, 255, 255, 0.08);
+}
+
+.sc-artwork,
+.image__full {
+  border-radius: 10px;
+}
+.sc-artwork.sc-artwork-placeholder-0,
+.image__rounded,
+.userAvatarBadge .sc-artwork,
+.userBadgeListItem .sc-artwork {
+  border-radius: 50%;
+}
+
+.sc-button-secondary:not(.sc-button-icon):not(.playControls__control) {
+  background-color: var(--cg-hover) !important;
+}
+
+/* Gallery arrows on the Home page */
+.tileGallery__sliderButton {
+  background-color: var(--cg-glass-menu) !important;
+  backdrop-filter: blur(16px) saturate(180%);
+  border-radius: 50% !important;
+  box-shadow: inset 0 1px 0.5px var(--cg-rim-hi), 0 6px 18px -4px rgba(0, 0, 0, 0.5);
+}
+
+/* ----------------------------------------------------------------- modals */
+
+.modal {
+  background: rgba(0, 0, 0, 0.32) !important;
+  backdrop-filter: blur(6px);
+}
+.modal__modal {
+  background: var(--cg-glass-strong) !important;
+  backdrop-filter: blur(40px) saturate(180%);
+  border-radius: 24px !important;
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 0.5px var(--cg-rim-hi),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.08),
+    var(--cg-shadow) !important;
+}
+/* The sign-in form is an opaque frame from secure.soundcloud.com; back it
+   with a matching solid sheet so the rounded card reads as one piece. */
+.auth-modal .modal__modal {
+  background: rgba(18, 18, 18, 0.96) !important;
+}
+body.theme-light .auth-modal .modal__modal {
+  background: rgba(255, 255, 255, 0.97) !important;
+}
+.modal__closeButton {
+  border-radius: 50% !important;
+  background-color: var(--cg-glass-menu) !important;
+  backdrop-filter: blur(16px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .playControls__inner { transition-duration: 0.01s !important; }
+}
